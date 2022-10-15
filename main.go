@@ -3,8 +3,12 @@ package main
 func main() {
 	bc := NewBlockchain()
 	bc.Print()
-	bc.CreateBlock(5, "hash 1")
+
+	previousHash := bc.LastBlock().Hash()
+	bc.CreateBlock(5, previousHash)
 	bc.Print()
-	bc.CreateBlock(2, "hah 2")
+
+	previousHash = bc.LastBlock().Hash()
+	bc.CreateBlock(2, previousHash)
 	bc.Print()
 }
