@@ -2,21 +2,26 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 )
 
 const (
-	MINING_DEFFICULTY = 3
+	MiningDifficulty = 3
+	MiningSender     = "THE BLOCKCHAIN"
+	MiningReward     = 1.0
 )
 
 type Blockchain struct {
 	transactionPool []*Transaction
 	chain           []*Block
+	address         string
 }
 
-func NewBlockchain() *Blockchain {
+func NewBlockchain(address string) *Blockchain {
 	b := new(Block)
 	bc := new(Blockchain)
+	bc.address = address
 	bc.CreateBlock(0, b.Hash())
 	return bc
 }
@@ -61,8 +66,17 @@ func (bc *Blockchain) ProofOfWork() int {
 	transactions := bc.CopyTransactionPool()
 	previousHash := bc.LastBlock().Hash()
 	nonce := 0
-	for !bc.ValidProof(nonce, previousHash, transactions, MINING_DEFFICULTY) {
+	for !bc.ValidProof(nonce, previousHash, transactions, MiningDifficulty) {
 		nonce += 1
 	}
 	return nonce
+}
+
+func (bc *Blockchain) Mining() bool {
+	bc.AddTransaction(MiningSender, bc.address, MiningReward)
+	nonce := bc.ProofOfWork()
+	previousHash := bc.LastBlock().Hash()
+	bc.CreateBlock(nonce, previousHash)
+	log.Println("action=mining, status=success")
+	return true
 }
