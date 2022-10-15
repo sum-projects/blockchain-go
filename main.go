@@ -6,12 +6,14 @@ func main() {
 
 	bc.AddTransaction("A", "B", 1.0)
 	previousHash := bc.LastBlock().Hash()
-	bc.CreateBlock(5, previousHash)
+	nonce := bc.ProofOfWork()
+	bc.CreateBlock(nonce, previousHash)
 	bc.Print()
 
 	bc.AddTransaction("C", "D", 2.0)
 	bc.AddTransaction("X", "Y", 3.0)
 	previousHash = bc.LastBlock().Hash()
-	bc.CreateBlock(2, previousHash)
+	nonce = bc.ProofOfWork()
+	bc.CreateBlock(nonce, previousHash)
 	bc.Print()
 }
