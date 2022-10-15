@@ -1,7 +1,9 @@
-package main
+package blockchain
 
 import (
 	"fmt"
+	"github.com/sum-project/blockchain/block"
+	"github.com/sum-project/blockchain/transaction"
 	"log"
 	"strings"
 )
@@ -13,50 +15,50 @@ const (
 )
 
 type Blockchain struct {
-	transactionPool []*Transaction
-	chain           []*Block
+	transactionPool []*transaction.Transaction
+	chain           []*block.Block
 	address         string
 }
 
 func NewBlockchain(address string) *Blockchain {
-	b := new(Block)
+	b := new(block.Block)
 	bc := new(Blockchain)
 	bc.address = address
 	bc.CreateBlock(0, b.Hash())
 	return bc
 }
 
-func (bc *Blockchain) CreateBlock(nonce int, previousHash [32]byte) *Block {
-	b := NewBlock(nonce, previousHash, bc.transactionPool)
+func (bc *Blockchain) CreateBlock(nonce int, previousHash [32]byte) *block.Block {
+	b := block.NewBlock(nonce, previousHash, bc.transactionPool)
 	bc.chain = append(bc.chain, b)
-	bc.transactionPool = []*Transaction{}
+	bc.transactionPool = []*transaction.Transaction{}
 	return b
 }
 
-func (bc *Blockchain) LastBlock() *Block {
+func (bc *Blockchain) LastBlock() *block.Block {
 	return bc.chain[len(bc.chain)-1]
 }
 
 func (bc *Blockchain) AddTransaction(sender, recipient string, value float32) {
-	t := NewTransaction(sender, recipient, value)
+	t := transaction.NewTransaction(sender, recipient, value)
 	bc.transactionPool = append(bc.transactionPool, t)
 }
 
-func (bc *Blockchain) CopyTransactionPool() []*Transaction {
-	transactions := make([]*Transaction, 0)
+func (bc *Blockchain) CopyTransactionPool() []*transaction.Transaction {
+	transactions := make([]*transaction.Transaction, 0)
 	for _, t := range bc.transactionPool {
-		transactions = append(transactions, NewTransaction(t.senderAddress, t.recipientAddress, t.value))
+		transactions = append(transactions, transaction.NewTransaction(t.SenderAddress, t.RecipientAddress, t.Value))
 	}
 	return transactions
 }
 
-func (bc *Blockchain) ValidProof(nonce int, previousHash [32]byte, transactions []*Transaction, difficulty int) bool {
+func (bc *Blockchain) ValidProof(nonce int, previousHash [32]byte, transactions []*transaction.Transaction, difficulty int) bool {
 	zeros := strings.Repeat("0", difficulty)
-	guessBlock := Block{
-		timestamp:    0,
-		nonce:        nonce,
-		previousHash: previousHash,
-		transactions: transactions,
+	guessBlock := block.Block{
+		Timestamp:    0,
+		Nonce:        nonce,
+		PreviousHash: previousHash,
+		Transactions: transactions,
 	}
 	guessHashStr := fmt.Sprintf("%x", guessBlock.Hash())
 	return guessHashStr[:difficulty] == zeros
@@ -84,16 +86,24 @@ func (bc *Blockchain) Mining() bool {
 func (bc *Blockchain) CalculateTotalAmount(address string) float32 {
 	var totalAmount float32 = 0.0
 	for _, b := range bc.chain {
-		for _, t := range b.transactions {
-			value := t.value
-			if address == t.recipientAddress {
+		for _, t := range b.Transactions {
+			value := t.Value
+			if address == t.RecipientAddress {
 				totalAmount += value
 			}
 
-			if address == t.senderAddress {
+			if address == t.SenderAddress {
 				totalAmount -= value
 			}
 		}
 	}
 	return totalAmount
+}
+
+func (bc *Blockchain) Print() {
+	for i, b := range bc.chain {
+		fmt.Printf("%s Chain %d %s\n", strings.Repeat("=", 25), i, strings.Repeat("=", 25))
+		b.Print()
+	}
+	fmt.Printf("%s\n", strings.Repeat("*", 25))
 }

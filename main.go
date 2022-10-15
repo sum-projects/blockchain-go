@@ -1,10 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/sum-project/blockchain/blockchain"
+)
 
 func main() {
 	myAddress := "my_blockchain_address"
-	bc := NewBlockchain(myAddress)
+	bc := blockchain.NewBlockchain(myAddress)
 	bc.Print()
 
 	bc.AddTransaction("A", "B", 1.0)
